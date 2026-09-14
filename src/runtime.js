@@ -1,10 +1,35 @@
+import fs from "node:fs";
+import path from "node:path";
+
 export class Runtime {
   constructor() {
     this.variables = new Map();
     this.functions = new Map();
     this.modules = new Set();
-    this.storage = new Map();
+
+    this.storageFile = path.resolve(".xena-data.json");
+    this.storage = this.loadStorage();
     this.lastValue = undefined;
+  }
+
+  loadStorage() {
+    if (!fs.existsSync(this.storageFile))
+      return {};
+
+    try {
+      return JSON.parse(
+        fs.readFileSync(this.storageFile, "utf8")
+      );
+    } catch {
+      return {};
+    }
+  }
+
+  saveStorage() {
+    fs.writeFileSync(
+      this.storageFile,
+      JSON.stringify(this.storage, null, 2)
+    );
   }
 
   resolve(node) {
@@ -14,8 +39,9 @@ export class Runtime {
       node.type === "Number" ||
       node.type === "String" ||
       node.type === "Boolean"
-    )
+    ) {
       return node.value;
+    }
 
     if (node.type === "Identifier") {
       return this.variables.has(node.name)
@@ -92,7 +118,9 @@ export class Runtime {
           const fn = this.functions.get(node.function);
 
           if (!fn)
-            throw new Error(`Fungsi ${node.function} tidak ditemukan`);
+            throw new Error(
+              `Fungsi ${node.function} tidak ditemukan`
+            );
 
           const old = new Map(this.variables);
 
@@ -107,24 +135,30 @@ export class Runtime {
           this.variables = old;
 
           if (!result?.returned)
-            throw new Error(`Fungsi ${node.function} tidak mengembalikan nilai`);
+            throw new Error(
+              `Fungsi ${node.function} tidak mengembalikan nilai`
+            );
 
           this.variables.set(node.name, result.value);
           break;
         }
 
-
         case "Send": {
           const value = node.value;
 
-          if (value.type === "Identifier" && this.variables.has(value.name)) {
+          if (
+            value.type === "Identifier" &&
+            this.variables.has(value.name)
+          ) {
             console.log(this.variables.get(value.name));
           } else {
-            console.log(this.resolveText(
-              value.type === "String"
-                ? value.value
-                : value.name ?? this.resolve(value)
-            ));
+            console.log(
+              this.resolveText(
+                value.type === "String"
+                  ? value.value
+                  : value.name ?? this.resolve(value)
+              )
+            );
           }
 
           break;
@@ -135,24 +169,19 @@ export class Runtime {
           console.log(this.lastValue);
           break;
 
-        case "Save":
-          this.storage.set(
-            node.name,
-            this.variables.get(node.name)
-          );
-          break;
-
-        case "Get":
-          this.lastValue = this.storage.get(node.name);
-          break;
-
         case "If": {
           const result = this.condition(node.condition);
 
           if (result) {
-            this.execute(node.body);
+            const output = this.execute(node.body);
+
+            if (output?.returned)
+              return output;
           } else if (node.elseBody?.length) {
-            this.execute(node.elseBody);
+            const output = this.execute(node.elseBody);
+
+            if (output?.returned)
+              return output;
           }
 
           break;
@@ -164,8 +193,12 @@ export class Runtime {
             i < Number(this.resolve(node.count));
             i++
           ) {
-            this.execute(node.body);
+            const output = this.execute(node.body);
+
+            if (output?.returned)
+              return output;
           }
+
           break;
 
         case "Function":
@@ -209,8 +242,33 @@ export class Runtime {
           console.log(`Modul ${node.name} dimasukkan`);
           break;
 
+        case "Save":
+          if (!this.variables.has(node.name))
+            throw new Error(
+              `Variabel ${node.name} tidak ditemukan`
+            );
+
+          this.storage[node.name] =
+            this.variables.get(node.name);
+
+          this.saveStorage();
+          break;
+
+        case "Get":
+          if (!(node.name in this.storage))
+            throw new Error(
+              `Data ${node.name} tidak ditemukan`
+            );
+
+          this.variables.set(
+            node.name,
+            this.storage[node.name]
+          );
+
+          break;
+
         case "Run":
-          console.log("XenaXFawn berjalan.");
+          console.log("Xena berjalan.");
           break;
       }
     }
