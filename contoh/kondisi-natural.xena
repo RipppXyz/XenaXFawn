@@ -1,0 +1,14 @@
+buat aktif = benar
+buat banned = salah
+
+kalau aktif
+    kirim Akun aktif
+
+kalau tidak aktif
+    kirim Akun tidak aktif
+
+kalau banned
+    kirim Akun diblokir
+
+kalau tidak banned
+    kirim Akun aman

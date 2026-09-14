@@ -1,0 +1,11 @@
+buat nama = Arip
+buat umur = 15
+
+simpan nama
+simpan umur
+
+ambil nama
+kirim nama
+
+ambil umur
+kirim umur

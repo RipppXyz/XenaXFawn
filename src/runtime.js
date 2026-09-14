@@ -3,6 +3,8 @@ export class Runtime {
     this.variables = new Map();
     this.functions = new Map();
     this.modules = new Set();
+    this.storage = new Map();
+    this.lastValue = undefined;
   }
 
   resolve(node) {
@@ -54,6 +56,24 @@ export class Runtime {
     if (operator === "kurang dari") return a < b;
     if (operator === "lebih dari atau sama dengan") return a >= b;
     if (operator === "kurang dari atau sama dengan") return a <= b;
+
+    return false;
+  }
+
+  condition(node) {
+    if (node.type === "Truth")
+      return Boolean(this.resolve(node.value));
+
+    if (node.type === "Not")
+      return !Boolean(this.resolve(node.value));
+
+    if (node.type === "Comparison") {
+      return this.compare(
+        this.resolve(node.left),
+        this.resolve(node.right),
+        node.operator
+      );
+    }
 
     return false;
   }
@@ -111,15 +131,23 @@ export class Runtime {
         }
 
         case "Expression":
-          console.log(this.resolve(node.expression));
+          this.lastValue = this.resolve(node.expression);
+          console.log(this.lastValue);
+          break;
+
+        case "Save":
+          this.storage.set(
+            node.name,
+            this.variables.get(node.name)
+          );
+          break;
+
+        case "Get":
+          this.lastValue = this.storage.get(node.name);
           break;
 
         case "If": {
-          const result = this.compare(
-            this.resolve(node.condition.left),
-            this.resolve(node.condition.right),
-            node.condition.operator
-          );
+          const result = this.condition(node.condition);
 
           if (result) {
             this.execute(node.body);

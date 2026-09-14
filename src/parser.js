@@ -46,6 +46,15 @@ function expression(text) {
 }
 
 function condition(text) {
+  text = text.trim();
+
+  if (text.startsWith("tidak ")) {
+    return {
+      type: "Not",
+      value: value(text.slice(6))
+    };
+  }
+
   const operators = [
     "lebih dari atau sama dengan",
     "kurang dari atau sama dengan",
@@ -69,7 +78,10 @@ function condition(text) {
     }
   }
 
-  throw new Error("Kondisi tidak valid");
+  return {
+    type: "Truth",
+    value: value(text)
+  };
 }
 
 function parseLine(line) {
@@ -162,6 +174,21 @@ function parseLine(line) {
       name: text.slice(8).trim()
     };
   }
+
+  if (text.startsWith("simpan ")) {
+    return {
+      type: "Save",
+      name: text.slice(7).trim()
+    };
+  }
+
+  if (text.startsWith("ambil ")) {
+    return {
+      type: "Get",
+      name: text.slice(6).trim()
+    };
+  }
+
 
   if (text === "jalankan") {
     return { type: "Run" };
