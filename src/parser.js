@@ -45,7 +45,9 @@ function parseLine(line) {
 
   if (text.startsWith("buat ")) {
     const match = text.match(/^buat (.+?) = (.+)$/);
-    if (!match) throw new Error(`Baris ${line.line}: format buat salah`);
+
+    if (!match)
+      throw new Error(`Baris ${line.line}: format buat salah`);
 
     return {
       type: "Variable",
@@ -54,25 +56,36 @@ function parseLine(line) {
     };
   }
 
-  if (text.startsWith("kirim "))
+  if (text.startsWith("kirim ")) {
     return {
       type: "Send",
       value: value(text.slice(6))
     };
+  }
 
-  if (text.startsWith("kalau "))
+  if (text === "kalau tidak") {
+    return {
+      type: "Else",
+      body: []
+    };
+  }
+
+  if (text.startsWith("kalau ")) {
     return {
       type: "If",
       condition: condition(text.slice(6)),
-      body: []
+      body: [],
+      elseBody: []
     };
+  }
 
-  if (text.startsWith("ulang ") && text.endsWith(" kali"))
+  if (text.startsWith("ulang ") && text.endsWith(" kali")) {
     return {
       type: "Loop",
       count: value(text.slice(6, -5).trim()),
       body: []
     };
+  }
 
   if (text.startsWith("fungsi ")) {
     const parts = text.slice(7).trim().split(/\s+/);
@@ -85,23 +98,26 @@ function parseLine(line) {
     };
   }
 
-  if (text.startsWith("masukin "))
+  if (text.startsWith("masukin ")) {
     return {
       type: "Import",
       name: text.slice(8).trim()
     };
+  }
 
-  if (text === "jalankan")
+  if (text === "jalankan") {
     return { type: "Run" };
+  }
 
   const call = text.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*(.*)$/);
 
-  if (call && call[2])
+  if (call && call[2]) {
     return {
       type: "Call",
       name: call[1],
       arguments: call[2].split(/\s+/).map(value)
     };
+  }
 
   return {
     type: "Expression",
@@ -121,8 +137,24 @@ export function parse(lines) {
       stack.pop();
     }
 
+    const current = stack[stack.length - 1];
     const node = parseLine(line);
-    stack[stack.length - 1].body.push(node);
+
+    if (node.type === "Else") {
+      const parent = current.body[current.body.length - 1];
+
+      if (!parent || parent.type !== "If")
+        throw new Error(`Baris ${line.line}: kalau tidak harus setelah kalau`);
+
+      stack.push({
+        indent: line.indent,
+        body: parent.elseBody
+      });
+
+      continue;
+    }
+
+    current.body.push(node);
 
     if (
       node.type === "If" ||

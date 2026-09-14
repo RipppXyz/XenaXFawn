@@ -1,0 +1,7 @@
+buat umur = 18
+
+kalau umur sama dengan 18
+    kirim Kamu sudah 18
+
+kalau tidak
+    kirim Kamu belum 18
