@@ -1,0 +1,6 @@
+fungsi tambah a b
+    balikkan a ditambah b
+
+buat hasil = tambah 10 5
+
+kirim hasil

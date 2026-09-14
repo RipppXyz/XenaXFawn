@@ -6,6 +6,8 @@ export class Runtime {
   }
 
   resolve(node) {
+    if (!node) return "";
+
     if (node.type === "Number" || node.type === "String")
       return node.value;
 
@@ -25,6 +27,20 @@ export class Runtime {
       if (node.operator === "dibagi") return left / right;
       if (node.operator === "modulo") return left % right;
     }
+
+    return "";
+  }
+
+  resolveText(text) {
+    return text.replace(
+      /\b[A-Za-z_][A-Za-z0-9_]*\b/g,
+      name => {
+        if (this.variables.has(name))
+          return String(this.variables.get(name));
+
+        return name;
+      }
+    );
   }
 
   compare(a, b, operator) {
@@ -48,11 +64,50 @@ export class Runtime {
           );
           break;
 
-        case "Send":
+        case "VariableCall": {
+          const fn = this.functions.get(node.function);
+
+          if (!fn)
+            throw new Error(`Fungsi ${node.function} tidak ditemukan`);
+
+          const old = new Map(this.variables);
+
+          fn.parameters.forEach((parameter, i) => {
+            this.variables.set(
+              parameter,
+              this.resolve(node.arguments[i])
+            );
+          });
+
+          const result = this.execute(fn.body);
+          this.variables = old;
+
+          if (!result?.returned)
+            throw new Error(`Fungsi ${node.function} tidak mengembalikan nilai`);
+
+          this.variables.set(node.name, result.value);
+          break;
+        }
+
+
+        case "Send": {
+          const value = node.value;
+
+          if (value.type === "Identifier" && this.variables.has(value.name)) {
+            console.log(this.variables.get(value.name));
+          } else {
+            console.log(this.resolveText(
+              value.type === "String"
+                ? value.value
+                : value.name ?? this.resolve(value)
+            ));
+          }
+
+          break;
+        }
+
         case "Expression":
-          console.log(
-            this.resolve(node.value ?? node.expression)
-          );
+          console.log(this.resolve(node.expression));
           break;
 
         case "If": {
@@ -85,6 +140,12 @@ export class Runtime {
           this.functions.set(node.name, node);
           break;
 
+        case "Return":
+          return {
+            returned: true,
+            value: this.resolve(node.value)
+          };
+
         case "Call": {
           const fn = this.functions.get(node.name);
 
@@ -102,8 +163,11 @@ export class Runtime {
             );
           });
 
-          this.execute(fn.body);
+          const result = this.execute(fn.body);
           this.variables = old;
+
+          if (result?.returned)
+            return result;
 
           break;
         }

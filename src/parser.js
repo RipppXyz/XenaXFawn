@@ -75,10 +75,29 @@ function parseLine(line) {
     if (!match)
       throw new Error(`Baris ${line.line}: format buat salah`);
 
+    const right = match[2].trim();
+
+    const call = right.match(/^([A-Za-z_][A-Za-z0-9_]*)\s+(.*)$/);
+
+    if (call && ![
+      "ditambah",
+      "dikurangi",
+      "dikali",
+      "dibagi",
+      "modulo"
+    ].some(op => right.includes(` ${op} `))) {
+      return {
+        type: "VariableCall",
+        name: match[1].trim(),
+        function: call[1],
+        arguments: call[2].split(/\s+/).map(value)
+      };
+    }
+
     return {
       type: "Variable",
       name: match[1].trim(),
-      value: expression(match[2])
+      value: expression(right)
     };
   }
 
@@ -110,6 +129,13 @@ function parseLine(line) {
       type: "Loop",
       count: value(text.slice(6, -5).trim()),
       body: []
+    };
+  }
+
+  if (text.startsWith("balikkan ")) {
+    return {
+      type: "Return",
+      value: expression(text.slice(9))
     };
   }
 

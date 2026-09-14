@@ -1,0 +1,13 @@
+buat nama = Arip
+buat umur = 15
+buat usiaDepan = umur ditambah 1
+
+kirim Halo nama
+kirim Umur kamu umur tahun
+kirim Tahun depan kamu usiaDepan
+
+kalau umur lebih dari 10
+    kirim nama sudah lebih dari 10 tahun
+
+kalau tidak
+    kirim nama masih 10 tahun atau kurang
