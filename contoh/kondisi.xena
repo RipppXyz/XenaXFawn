@@ -1,0 +1,10 @@
+buat umur = 15
+
+kalau umur sama dengan 15
+    kirim Kamu berumur 15
+
+kalau umur beda dengan 20
+    kirim Umur kamu bukan 20
+
+kalau umur lebih dari 10
+    kirim Kamu lebih dari 10
