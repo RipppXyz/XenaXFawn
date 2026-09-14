@@ -4,6 +4,12 @@ function value(text) {
   if (/^-?\d+(\.\d+)?$/.test(text))
     return { type: "Number", value: Number(text) };
 
+  if (text === "benar")
+    return { type: "Boolean", value: true };
+
+  if (text === "salah")
+    return { type: "Boolean", value: false };
+
   if (
     (text.startsWith('"') && text.endsWith('"')) ||
     (text.startsWith("'") && text.endsWith("'"))

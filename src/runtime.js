@@ -8,7 +8,11 @@ export class Runtime {
   resolve(node) {
     if (!node) return "";
 
-    if (node.type === "Number" || node.type === "String")
+    if (
+      node.type === "Number" ||
+      node.type === "String" ||
+      node.type === "Boolean"
+    )
       return node.value;
 
     if (node.type === "Identifier") {

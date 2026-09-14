@@ -1,0 +1,9 @@
+buat nama = "Arip"
+buat umur = 15
+buat aktif = benar
+buat banned = salah
+
+kirim nama
+kirim umur
+kirim aktif
+kirim banned
