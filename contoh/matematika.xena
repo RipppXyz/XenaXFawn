@@ -1,0 +1,12 @@
+buat a = 10
+buat b = 5
+
+buat tambah = a ditambah b
+buat kurang = a dikurangi b
+buat kali = a dikali b
+buat bagi = a dibagi b
+
+kirim tambah
+kirim kurang
+kirim kali
+kirim bagi

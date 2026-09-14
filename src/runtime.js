@@ -14,6 +14,17 @@ export class Runtime {
         ? this.variables.get(node.name)
         : node.name;
     }
+
+    if (node.type === "Binary") {
+      const left = Number(this.resolve(node.left));
+      const right = Number(this.resolve(node.right));
+
+      if (node.operator === "ditambah") return left + right;
+      if (node.operator === "dikurangi") return left - right;
+      if (node.operator === "dikali") return left * right;
+      if (node.operator === "dibagi") return left / right;
+      if (node.operator === "modulo") return left % right;
+    }
   }
 
   compare(a, b, operator) {

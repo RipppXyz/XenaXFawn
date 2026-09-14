@@ -1,0 +1,4 @@
+buat angka = 17
+buat sisa = angka modulo 5
+
+kirim sisa

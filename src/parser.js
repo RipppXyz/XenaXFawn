@@ -13,6 +13,32 @@ function value(text) {
   return { type: "Identifier", name: text };
 }
 
+function expression(text) {
+  const operators = [
+    "ditambah",
+    "dikurangi",
+    "dikali",
+    "dibagi",
+    "modulo"
+  ];
+
+  for (const operator of operators) {
+    const marker = ` ${operator} `;
+    const index = text.indexOf(marker);
+
+    if (index !== -1) {
+      return {
+        type: "Binary",
+        operator,
+        left: value(text.slice(0, index)),
+        right: value(text.slice(index + marker.length))
+      };
+    }
+  }
+
+  return value(text);
+}
+
 function condition(text) {
   const operators = [
     "lebih dari atau sama dengan",
@@ -52,7 +78,7 @@ function parseLine(line) {
     return {
       type: "Variable",
       name: match[1].trim(),
-      value: value(match[2])
+      value: expression(match[2])
     };
   }
 
