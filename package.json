@@ -1,0 +1,15 @@
+{
+  "name": "xenaxfawn",
+  "version": "0.1.0",
+  "description": "XenaXFawn programming language",
+  "type": "module",
+  "bin": {
+    "xena": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node tests/test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
